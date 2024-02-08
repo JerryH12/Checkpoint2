@@ -2,6 +2,7 @@
 // Jerry Hall
 
 using System;
+using System.Diagnostics.Tracing;
 
 string[] input = new string[3];
 const int category = 0;
@@ -26,6 +27,7 @@ bool exit = false;
 
             if (input[n].ToLower() == "q")
             {
+                prodList.DisplayProducts();
                 exit = true;
                 break;
             }
@@ -33,12 +35,6 @@ bool exit = false;
 
         if (exit)
         {
-            prodList.DisplayProducts();
-            Console.WriteLine("------------------------------------------------");
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("To add a new product - enter: \"P\" | To quit - enter: \"Q\"");
-            Console.ResetColor();
-
             while (true) 
             {
                 string command = Console.ReadLine().ToLower();
@@ -53,22 +49,39 @@ bool exit = false;
                 {     
                     break;
                 }
+
+                if (command == "s")
+                {
+                    Console.Write("Enter a Product Name: ");
+                    string keyword = Console.ReadLine();
+                    prodList.DisplayProducts(keyword);
+                }
             }
         }    
-        else if (int.TryParse(input[price], out int value))
+        else
         {
-            prodList.AddProduct(new Product(input[category], input[name], value));
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("The product was successfully added!");      
-            Console.ResetColor();
-            Console.WriteLine("------------------------------------------------");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("To enter a new product - follow the steps | To quit - enter: \"Q\"");
-            Console.ResetColor();
+            try
+            {
+                int value = int.Parse(input[price]);
+                prodList.AddProduct(new Product(input[category], input[name], Math.Abs(value)));
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("The product was successfully added!");
+                Console.ResetColor();
+                Console.WriteLine("------------------------------------------------");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("To enter a new product - follow the steps | To quit - enter: \"Q\"");
+                Console.ResetColor();
+            }
+            catch 
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Error! Price in wrong format.");
+                Console.ResetColor();
+            }
         }
     }
     
-
 class ProductList
 {
     List<Product> products = new List<Product>();
@@ -85,7 +98,7 @@ class ProductList
         products.Remove(p);
     }
 
-    public void DisplayProducts()
+    public void DisplayProducts(string keyword="")
     {
         Console.WriteLine("------------------------------------------------");
 
@@ -95,12 +108,19 @@ class ProductList
 
         int totalPrice = products.Sum(productItem => productItem.price);
         List<Product> productsSorted = products.OrderBy(productItem => productItem.price).ToList();
-
+        
         foreach (var productItem in productsSorted)
         {
+            Console.ForegroundColor = productItem.name.Equals(keyword) ?  ConsoleColor.Magenta : ConsoleColor.White;        
             Console.WriteLine(productItem.category.PadRight(20) + productItem.name.PadRight(20) + productItem.price);
         }
+        Console.ResetColor();
         Console.WriteLine("\n".PadRight(20) + "Total amount: ".PadRight(20) + totalPrice);
+
+        Console.WriteLine("------------------------------------------------");
+        Console.ForegroundColor = ConsoleColor.Blue;
+        Console.WriteLine("To add a new product - enter: \"P\" | To Search for a product - enter: \"S\" | To quit - enter: \"Q\"");
+        Console.ResetColor();
     }
 }
 
